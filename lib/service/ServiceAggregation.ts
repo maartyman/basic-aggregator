@@ -1,23 +1,15 @@
 import { StreamParser, StreamWriter } from 'n3';
-import { v4 } from 'uuid';
 import type { IFetch } from '../fetch/IFetch';
-import type { IPod } from '../pod/IPod';
-import { AsyncConstructor } from '../core/AsyncConstructor';
-import type { IOperation, IOperationResult, IOperationTestResult, IService, IServiceDescription } from './IService';
+import type { Endpoint } from '../endpoint/Endpoint';
+import type { IOperation, IOperationTestResult, IService, IServiceDescription } from './IService';
 
-export class ServiceAggregation extends AsyncConstructor implements IService {
+export class ServiceAggregation implements IService {
   public fetch: IFetch;
-  public pod: IPod;
-  private podLocation: string | undefined;
+  public endpoint: Endpoint;
 
   public constructor(args: ServiceAggregationArgs) {
-    super(args);
     this.fetch = args.fetch;
-    this.pod = args.pod;
-  }
-
-  protected async initialize(args: ServiceAggregationArgs): Promise<void> {
-    this.podLocation = await args.pod.newServiceLocation(this.description);
+    this.endpoint = args.endpoint;
   }
 
   public async test(operation: IOperation): Promise<IOperationTestResult> {
@@ -31,9 +23,7 @@ export class ServiceAggregation extends AsyncConstructor implements IService {
     };
   }
 
-  public async run(operation: IOperation): Promise<IOperationResult> {
-    const resultLocation = `${this.podLocation}/${v4()}.ttl`;
-
+  public async run(operation: IOperation): Promise<string> {
     const streamWriter = new StreamWriter();
     for (const source of operation.sources) {
       const streamParser = new StreamParser();
@@ -42,19 +32,19 @@ export class ServiceAggregation extends AsyncConstructor implements IService {
       streamParser.pipe(streamWriter);
     }
 
-    await this.fetch.fetch(resultLocation, {
-      method: 'PUT',
-      body: streamWriter,
-      headers: {
-        'Content-Type': 'text/turtle', // eslint-disable-line ts/naming-convention
-      },
+    const chunks = [];
+    for await (const chunk of streamWriter) {
+      chunks.push(Buffer.from(chunk)); // eslint-disable-line ts/no-unsafe-argument
+    }
+    const result = Buffer.concat(chunks).toString('utf-8');
+
+    const serviceEndpoint = this.endpoint.newServiceEndpoint((request, response): void => {
+      response.writeHead(200);
+      response.setHeader('Content-Type', 'text/turtle');
+      response.write(result);
     });
 
-    return {
-      aggregatorService: this,
-      operation,
-      resultLocation,
-    };
+    return serviceEndpoint;
   }
 
   public get description(): IServiceDescription {
@@ -66,5 +56,5 @@ export class ServiceAggregation extends AsyncConstructor implements IService {
 
 export type ServiceAggregationArgs = {
   fetch: IFetch;
-  pod: IPod;
+  endpoint: Endpoint;
 };

@@ -1,9 +1,0 @@
-[
-  {
-    "email": "aggregator@example.com",
-    "password": "aggregator",
-    "pods": [
-      { "name": "aggregator" }
-    ]
-  }
-]

@@ -1,4 +1,4 @@
-import type { IOperation, IOperationResult, IService } from '../service/IService';
+import type { IOperation, IService } from '../service/IService';
 import type { ICostQueueFactory } from '../cost-queue/ICostQueue';
 import type { IServiceRegistry } from './IServiceRegistry';
 
@@ -11,16 +11,7 @@ export class ServiceRegistryHardcodedTestOnly implements IServiceRegistry {
     this.costQueueFactory = costQueueFactory;
   }
 
-  public async initializeServices(): Promise<void> {
-    await Promise.all(
-      this.services.map(
-        async(aggregatorService): Promise<void> => new Promise<void>((resolve): void =>
-          aggregatorService.subscribeInitialized(resolve)),
-      ),
-    );
-  }
-
-  public async run(operation: IOperation): Promise<IOperationResult | undefined> {
+  public async run(operation: IOperation): Promise<void> {
     const costQueue = this.costQueueFactory.create();
 
     await Promise.all(this.services.map(
@@ -36,12 +27,10 @@ export class ServiceRegistryHardcodedTestOnly implements IServiceRegistry {
     let operationResult = costQueue.pop();
     while (operationResult === undefined || operationResult.operationResult === undefined) {
       if (costQueue.length === 0) {
-        return undefined;
+        throw new Error('No aggregator services can handel operation.');
       }
       operationResult = costQueue.pop();
     }
-
-    return operationResult.operationResult;
   }
 
   public get descriptions(): string[] {

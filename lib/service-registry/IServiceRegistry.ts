@@ -1,7 +1,6 @@
-import type { IOperation, IOperationResult } from '../service/IService';
+import type { IOperation } from '../service/IService';
 
 export interface IServiceRegistry {
   get descriptions(): string[];
-  initializeServices: () => Promise<void>;
-  run: (operation: IOperation) => Promise<IOperationResult | undefined>;
+  run: (operation: IOperation) => Promise<void>;
 }

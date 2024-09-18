@@ -1,21 +1,11 @@
-import { AsyncConstructor } from '../core/AsyncConstructor';
-import type { IPod } from '../pod/IPod';
-import type { IFetch } from '../fetch/IFetch';
-import type { IOperation, IOperationResult, IOperationTestResult, IService, IServiceDescription } from './IService';
+import type { Endpoint } from '../endpoint/Endpoint';
+import type { IOperation, IOperationTestResult, IService, IServiceDescription } from './IService';
 
-export class ServiceEmpty extends AsyncConstructor implements IService {
-  private podLocation: string | undefined;
-  public fetch: IFetch;
-  public pod: IPod;
+export class ServiceEmpty implements IService {
+  public endpoint: Endpoint;
 
   public constructor(args: ServiceEmptyArgs) {
-    super(args);
-    this.fetch = args.fetch;
-    this.pod = args.pod;
-  }
-
-  protected async initialize(args: ServiceEmptyArgs): Promise<void> {
-    this.podLocation = await args.pod.newServiceLocation(this.description);
+    this.endpoint = args.endpoint;
   }
 
   public async test(operation: IOperation): Promise<IOperationTestResult> {
@@ -29,12 +19,12 @@ export class ServiceEmpty extends AsyncConstructor implements IService {
     };
   }
 
-  public async run(operation: IOperation): Promise<IOperationResult> {
-    return {
-      aggregatorService: this,
-      operation,
-      resultLocation: '',
-    };
+  public async run(): Promise<string> {
+    return this.endpoint.newServiceEndpoint((request, response): void => {
+      response.writeHead(200);
+      response.setHeader('Content-Type', 'text/turtle');
+      response.write('');
+    });
   }
 
   public get description(): IServiceDescription {
@@ -45,6 +35,5 @@ export class ServiceEmpty extends AsyncConstructor implements IService {
 }
 
 export type ServiceEmptyArgs = {
-  fetch: IFetch;
-  pod: IPod;
+  endpoint: Endpoint;
 };

@@ -1,10 +1,9 @@
 import type { CostParameters } from '../cost-queue/ICostQueue';
-import type { IAsyncConstructor } from '../core/AsyncConstructor';
 
-export interface IService extends IAsyncConstructor {
+export interface IService {
   get description(): IServiceDescription;
   test: (operation: IOperation) => Promise<IOperationTestResult>;
-  run: (operation: IOperation) => Promise<IOperationResult | undefined>;
+  run: (operation: IOperation) => Promise<string | undefined>;
 }
 
 export interface IServiceDescription {
@@ -22,7 +21,7 @@ export interface IOperationTestResult {
 export interface IOperationResult {
   aggregatorService: IService;
   operation: IOperation;
-  resultLocation: string;
+  serviceEndpoint: string;
 }
 
 export interface IOperation {

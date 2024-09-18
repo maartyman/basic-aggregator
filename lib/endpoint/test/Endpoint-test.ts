@@ -22,7 +22,7 @@ describe('Endpoint', (): void => {
           'testDescription',
         ]) as any,
         run: jest.fn(
-          async(): Promise<undefined> => undefined,
+          async(): Promise<void> => {},
         ),
       };
     });
@@ -191,7 +191,7 @@ describe('Endpoint', (): void => {
           'testDescription',
         ]) as any,
         run: jest.fn(
-          async(): Promise<undefined> => undefined,
+          async(): Promise<void> => {},
         ),
       };
 

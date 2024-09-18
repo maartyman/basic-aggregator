@@ -17,7 +17,7 @@ describe('EndpointHandlerServiceDescription', (): void => {
       initializeServices: jest.fn().mockResolvedValue(undefined),
       descriptions,
       run: jest.fn(
-        async(): Promise<undefined> => undefined,
+        async(): Promise<void> => {},
       ),
     };
 
@@ -39,7 +39,7 @@ describe('EndpointHandlerServiceDescription', (): void => {
         initializeServices: jest.fn().mockResolvedValue(undefined),
         descriptions,
         run: jest.fn(
-          async(): Promise<undefined> => undefined,
+          async(): Promise<void> => {},
         ),
       };
 
